@@ -91,11 +91,10 @@
 ### Episode Cousine Chef
 * cousine_chef_id: int
 * chef_id: int
-* national_cousine_id: int
 * recipe_id: int
 
-### Episode Chefs
-* episode_chef_id: int
+### Episode
+* episode_id: int
 * cousine_chef_id_1: int
 * cousine_chef_id_2: int
 * cousine_chef_id_3: int
@@ -106,20 +105,11 @@
 * cousine_chef_id_8: int
 * cousine_chef_id_9: int
 * cousine_chef_id_10: int
-
-### Episode Judges
-* episode_judge_id: int
 * judge_chef_id_1: int
 * judge_chef_id_2: int
-* judge_chef_id_3: int
-
-### Episode
-* episode_id: int
-* episode_chef_id: int
-* episode_judge_id: int
+* judge_chef_id_3: iny
 
 ### Episode Rating
-* rating_id: int
 * episode_id: int
 * chef_id: rating
 * rating_1: int
