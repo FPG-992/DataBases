@@ -67,6 +67,7 @@
 * ingredient_recipe_id: int
 * ingredient_name: varchar
 * recipe_id: int
+* quantity: int
 
 ### Theme
 * theme_name: varchar
