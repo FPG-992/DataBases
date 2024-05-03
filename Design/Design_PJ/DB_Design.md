@@ -85,7 +85,7 @@
 * date_of_birth: date
 * age: int
 * expertise_years: int
-* national_cousine_id: varchar
+* expertise_national_cousine_id: varchar
 * chef_type: varchar
 
 ### Episode Cousine Chef
