@@ -64,9 +64,6 @@ CREATE TABLE `episode_participants` (
   `chef_id` int(11) NOT NULL,
   `recipe_id` int(11) DEFAULT NULL,
   `role` enum('participant','judge') NOT NULL,
-  `score_1` int(11) DEFAULT NULL,
-  `score_2` int(11) DEFAULT NULL,
-  `score_3` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `chef_id` (`chef_id`),
   KEY `episode_id` (`episode_id`),
@@ -90,7 +87,7 @@ CREATE TABLE `episodes` (
   `month` int(11) NOT NULL,
   `year` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=271 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=301 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -148,6 +145,29 @@ CREATE TABLE `ingredients` (
   CONSTRAINT `ingredients_ibfk_1` FOREIGN KEY (`food_group`) REFERENCES `food_groups` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `ingredients_ibfk_2` FOREIGN KEY (`food_group`) REFERENCES `food_groups` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=1796 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `judge_rates_chef`
+--
+
+DROP TABLE IF EXISTS `judge_rates_chef`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `judge_rates_chef` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'Primary Key',
+  `score` int(11) NOT NULL COMMENT 'Score',
+  `chef_id` int(11) NOT NULL,
+  `judge_id` int(11) NOT NULL,
+  `episode_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `chef` (`chef_id`),
+  KEY `judge` (`judge_id`),
+  KEY `episode_id` (`episode_id`),
+  CONSTRAINT `judge_rates_chef_ibfk_1` FOREIGN KEY (`chef_id`) REFERENCES `chefs` (`id`),
+  CONSTRAINT `judge_rates_chef_ibfk_2` FOREIGN KEY (`judge_id`) REFERENCES `chefs` (`id`),
+  CONSTRAINT `judge_rates_chef_ibfk_3` FOREIGN KEY (`episode_id`) REFERENCES `episodes` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=301 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -346,4 +366,4 @@ CREATE TABLE `themes` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-05-21 15:02:19
+-- Dump completed on 2024-05-23 21:23:57
