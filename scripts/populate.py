@@ -96,8 +96,8 @@ def insert_episode_participants(connection, episode_id, participant_cooks, judge
         recipe_id = select_random_recipe_by_cuisine(connection, cuisine)
 
         query = f"""
-        INSERT INTO episode_participants (episode_id, chef_id, recipe_id, role, score_1, score_2, score_3)
-        VALUES ({episode_id}, {cook_id}, {recipe_id}, 'participant', {random.randint(1, 5)}, {random.randint(1, 5)}, {random.randint(1, 5)});
+        INSERT INTO episode_participants (episode_id, chef_id, recipe_id, role)
+        VALUES ({episode_id}, {cook_id}, {recipe_id}, 'participant');
         """
         execute_query(connection, query)
 
@@ -107,6 +107,32 @@ def insert_episode_participants(connection, episode_id, participant_cooks, judge
         VALUES ({episode_id}, {cook_id}, 'judge');
         """
         execute_query(connection, query)
+
+
+def insert_judge_scores(connection, episode_id):
+    # Get judges from episode_id
+    query = f"""
+    SELECT chef_id FROM episode_participants
+    WHERE episode_id = {episode_id} AND role = 'judge';
+    """
+    judges = fetch_query(connection, query)
+
+    # Get participants from episode_id
+    query = f"""
+    SELECT chef_id FROM episode_participants
+    WHERE episode_id = {episode_id} AND role = 'participant';
+    """
+    participants = fetch_query(connection, query)
+
+    # Fill the scores for each participant
+    for participant in participants:
+        for judge in judges:
+            score = random.randint(1, 5)
+            query = f"""
+            INSERT INTO judge_rates_chef (score, chef_id, judge_id, episode_id)
+            VALUES ({score}, {participant['chef_id']}, {judge['chef_id']}, {episode_id});
+            """
+            execute_query(connection, query)
 
 
 def main():
@@ -150,6 +176,8 @@ def main():
         insert_episode_participants(
             connection, episode_id, participant_cooks, judge_cooks
         )
+
+        insert_judge_scores(connection, episode_id)
 
 
 if __name__ == "__main__":
