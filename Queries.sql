@@ -511,7 +511,7 @@ FROM (
 INNER JOIN episodes ON episodes.id = ep_eqc.episode_id
 ORDER BY ep_eqc.equipment_count DESC;
 
-SELECT * FROM information_schema.optimizer_trace\G
+SELECT * FROM information_schema.optimizer_trace
 
 SET optimizer_trace='enabled=off';
 

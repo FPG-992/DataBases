@@ -1,0 +1,1056 @@
+{
+  "steps": [
+    {
+      "join_preparation": {
+        "select_id": 1,
+        "steps": [
+          {
+            "derived": {
+              "table": "ep_eqc",
+              "select_id": 2,
+              "algorithm": "materialized"
+            }
+          },
+          {
+            "join_preparation": {
+              "select_id": 2,
+              "steps": [
+                {
+                  "expanded_query": "/* select#2 */ select ep.episode_id AS episode_id,count(0) AS equipment_count from ((recipes r join episode_participants ep FORCE INDEX (recipe_id) on(r.`id` = ep.recipe_id)) join recipe_uses_equipment rue FORCE INDEX (recipe_id) on(r.`id` = rue.recipe_id)) group by ep.episode_id"
+                }
+              ]
+            }
+          },
+          {
+            "expanded_query": "/* select#1 */ select episodes.`id` AS `id`,episodes.`day` AS `day`,episodes.`month` AS `month`,episodes.`year` AS `year`,ep_eqc.equipment_count AS equipment_count from ((/* select#2 */ select ep.episode_id AS episode_id,count(0) AS equipment_count from ((recipes r join episode_participants ep FORCE INDEX (recipe_id) on(r.`id` = ep.recipe_id)) join recipe_uses_equipment rue FORCE INDEX (recipe_id) on(r.`id` = rue.recipe_id)) group by ep.episode_id) ep_eqc join episodes on(episodes.`id` = ep_eqc.episode_id)) order by ep_eqc.equipment_count desc"
+          }
+        ]
+      }
+    },
+    {
+      "join_optimization": {
+        "select_id": 1,
+        "steps": [
+          {
+            "condition_processing": {
+              "condition": "WHERE",
+              "original_condition": "episodes.`id` = ep_eqc.episode_id",
+              "steps": [
+                {
+                  "transformation": "equality_propagation",
+                  "resulting_condition": "multiple equal(episodes.`id`, ep_eqc.episode_id)"
+                },
+                {
+                  "transformation": "constant_propagation",
+                  "resulting_condition": "multiple equal(episodes.`id`, ep_eqc.episode_id)"
+                },
+                {
+                  "transformation": "trivial_condition_removal",
+                  "resulting_condition": "multiple equal(episodes.`id`, ep_eqc.episode_id)"
+                }
+              ]
+            }
+          },
+          {
+            "join_optimization": {
+              "select_id": 2,
+              "steps": [
+                {
+                  "condition_processing": {
+                    "condition": "WHERE",
+                    "original_condition": "r.`id` = rue.recipe_id and r.`id` = ep.recipe_id",
+                    "steps": [
+                      {
+                        "transformation": "equality_propagation",
+                        "resulting_condition": "multiple equal(r.`id`, rue.recipe_id, ep.recipe_id)"
+                      },
+                      {
+                        "transformation": "constant_propagation",
+                        "resulting_condition": "multiple equal(r.`id`, rue.recipe_id, ep.recipe_id)"
+                      },
+                      {
+                        "transformation": "trivial_condition_removal",
+                        "resulting_condition": "multiple equal(r.`id`, rue.recipe_id, ep.recipe_id)"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "table_dependencies": [
+                    {
+                      "table": "r",
+                      "row_may_be_null": false,
+                      "map_bit": 0,
+                      "depends_on_map_bits": []
+                    },
+                    {
+                      "table": "ep",
+                      "row_may_be_null": false,
+                      "map_bit": 1,
+                      "depends_on_map_bits": []
+                    },
+                    {
+                      "table": "rue",
+                      "row_may_be_null": false,
+                      "map_bit": 2,
+                      "depends_on_map_bits": []
+                    }
+                  ]
+                },
+                {
+                  "ref_optimizer_key_uses": [
+                    {
+                      "table": "r",
+                      "index": "PRIMARY",
+                      "field": "id",
+                      "equals": "rue.recipe_id",
+                      "null_rejecting": false
+                    },
+                    {
+                      "table": "r",
+                      "index": "PRIMARY",
+                      "field": "id",
+                      "equals": "ep.recipe_id",
+                      "null_rejecting": true
+                    },
+                    {
+                      "table": "r",
+                      "index": "id",
+                      "field": "id",
+                      "equals": "rue.recipe_id",
+                      "null_rejecting": false
+                    },
+                    {
+                      "table": "r",
+                      "index": "id",
+                      "field": "id",
+                      "equals": "ep.recipe_id",
+                      "null_rejecting": true
+                    },
+                    {
+                      "table": "ep",
+                      "index": "recipe_id",
+                      "field": "recipe_id",
+                      "equals": "r.`id`",
+                      "null_rejecting": true
+                    },
+                    {
+                      "table": "ep",
+                      "index": "recipe_id",
+                      "field": "recipe_id",
+                      "equals": "rue.recipe_id",
+                      "null_rejecting": true
+                    },
+                    {
+                      "table": "rue",
+                      "index": "recipe_id",
+                      "field": "recipe_id",
+                      "equals": "r.`id`",
+                      "null_rejecting": false
+                    },
+                    {
+                      "table": "rue",
+                      "index": "recipe_id",
+                      "field": "recipe_id",
+                      "equals": "ep.recipe_id",
+                      "null_rejecting": true
+                    }
+                  ]
+                },
+                {
+                  "rows_estimation": [
+                    {
+                      "table": "r",
+                      "range_analysis": {
+                        "table_scan": {
+                          "rows": 392,
+                          "cost": 0.0798796
+                        },
+                        "potential_range_indexes": [
+                          {
+                            "index": "PRIMARY",
+                            "usable": false,
+                            "cause": "not applicable"
+                          },
+                          {
+                            "index": "id",
+                            "usable": false,
+                            "cause": "not applicable"
+                          },
+                          {
+                            "index": "national_cuisine",
+                            "usable": true,
+                            "key_parts": ["national_cuisine", "id"]
+                          },
+                          {
+                            "index": "meal_type",
+                            "usable": false,
+                            "cause": "not applicable"
+                          },
+                          {
+                            "index": "main_ingredient_id",
+                            "usable": false,
+                            "cause": "not applicable"
+                          }
+                        ],
+                        "best_covering_index_scan": {
+                          "index": "id",
+                          "cost": 0.06414644,
+                          "chosen": true
+                        },
+                        "setup_range_conditions": [],
+                        "group_index_range": {
+                          "chosen": false,
+                          "cause": "not single_table"
+                        }
+                      }
+                    },
+                    {
+                      "selectivity_for_indexes": [],
+                      "selectivity_for_columns": [],
+                      "cond_selectivity": 1
+                    },
+                    {
+                      "table": "ep",
+                      "range_analysis": {}
+                    },
+                    {
+                      "selectivity_for_indexes": [],
+                      "selectivity_for_columns": [],
+                      "cond_selectivity": 1
+                    },
+                    {
+                      "table": "rue",
+                      "range_analysis": {
+                        "potential_range_indexes": [
+                          {
+                            "index": "PRIMARY",
+                            "usable": false,
+                            "cause": "not applicable"
+                          },
+                          {
+                            "index": "equipment_id",
+                            "usable": false,
+                            "cause": "not applicable"
+                          },
+                          {
+                            "index": "recipe_id",
+                            "usable": true,
+                            "key_parts": ["recipe_id", "equipment_id"]
+                          }
+                        ],
+                        "best_covering_index_scan": {
+                          "index": "recipe_id",
+                          "cost": 0.07998842,
+                          "chosen": true
+                        },
+                        "setup_range_conditions": [],
+                        "group_index_range": {
+                          "chosen": false,
+                          "cause": "not single_table"
+                        }
+                      }
+                    },
+                    {
+                      "selectivity_for_indexes": [],
+                      "selectivity_for_columns": [],
+                      "cond_selectivity": 1
+                    }
+                  ]
+                },
+                {
+                  "considered_execution_plans": [
+                    {
+                      "plan_prefix": "",
+                      "get_costs_for_tables": [
+                        {
+                          "best_access_path": {
+                            "table": "r",
+                            "plan_details": {
+                              "record_count": 1
+                            },
+                            "considered_access_paths": [
+                              {
+                                "access_type": "scan",
+                                "rows": 392,
+                                "rows_after_filter": 392,
+                                "rows_out": 392,
+                                "cost": 0.06414644,
+                                "index_only": true,
+                                "chosen": true
+                              }
+                            ],
+                            "chosen_access_method": {
+                              "type": "scan",
+                              "rows_read": 392,
+                              "rows_out": 392,
+                              "cost": 0.06414644,
+                              "uses_join_buffering": false
+                            }
+                          }
+                        },
+                        {
+                          "best_access_path": {
+                            "table": "rue",
+                            "plan_details": {
+                              "record_count": 1
+                            },
+                            "considered_access_paths": [
+                              {
+                                "access_type": "index",
+                                "rows": 500,
+                                "rows_after_filter": 500,
+                                "rows_out": 500,
+                                "cost": 0.07998842,
+                                "chosen": true
+                              }
+                            ],
+                            "chosen_access_method": {
+                              "type": "index",
+                              "rows_read": 500,
+                              "rows_out": 500,
+                              "cost": 0.07998842,
+                              "uses_join_buffering": false
+                            }
+                          }
+                        },
+                        {
+                          "best_access_path": {
+                            "table": "ep",
+                            "plan_details": {
+                              "record_count": 1
+                            },
+                            "considered_access_paths": [
+                              {
+                                "access_type": "scan",
+                                "rows": 650,
+                                "rows_after_filter": 650,
+                                "rows_out": 650,
+                                "cost": 0.1185144,
+                                "index_only": false,
+                                "chosen": true,
+                                "use_tmp_table": true
+                              }
+                            ],
+                            "chosen_access_method": {
+                              "type": "scan",
+                              "rows_read": 650,
+                              "rows_out": 650,
+                              "cost": 0.1185144,
+                              "uses_join_buffering": false
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "plan_prefix": "",
+                      "table": "r",
+                      "rows_for_plan": 392,
+                      "cost_for_plan": 0.06414644,
+                      "rest_of_plan": [
+                        {
+                          "plan_prefix": "r",
+                          "get_costs_for_tables": [
+                            {
+                              "best_access_path": {
+                                "table": "rue",
+                                "plan_details": {
+                                  "record_count": 392
+                                },
+                                "considered_access_paths": [
+                                  {
+                                    "access_type": "ref",
+                                    "index": "recipe_id",
+                                    "rows": 1,
+                                    "cost": 0.38239396,
+                                    "chosen": true
+                                  },
+                                  {
+                                    "type": "scan",
+                                    "chosen": false,
+                                    "cause": "cost"
+                                  }
+                                ],
+                                "chosen_access_method": {
+                                  "type": "ref",
+                                  "rows_read": 1,
+                                  "rows_out": 1,
+                                  "cost": 0.38239396,
+                                  "uses_join_buffering": false
+                                }
+                              }
+                            },
+                            {
+                              "best_access_path": {
+                                "table": "ep",
+                                "plan_details": {
+                                  "record_count": 392
+                                },
+                                "considered_access_paths": [
+                                  {
+                                    "access_type": "ref",
+                                    "index": "recipe_id",
+                                    "rows": 2,
+                                    "cost": 1.106208,
+                                    "chosen": true
+                                  },
+                                  {
+                                    "type": "scan",
+                                    "chosen": false,
+                                    "cause": "cost"
+                                  }
+                                ],
+                                "chosen_access_method": {
+                                  "type": "ref",
+                                  "rows_read": 2,
+                                  "rows_out": 2,
+                                  "cost": 1.106208,
+                                  "uses_join_buffering": false
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "plan_prefix": "r",
+                          "table": "rue",
+                          "rows_for_plan": 392,
+                          "cost_for_plan": 0.4465404,
+                          "rest_of_plan": [
+                            {
+                              "plan_prefix": "r,rue",
+                              "get_costs_for_tables": [
+                                {
+                                  "best_access_path": {
+                                    "table": "ep",
+                                    "plan_details": {
+                                      "record_count": 392
+                                    },
+                                    "considered_access_paths": [
+                                      {
+                                        "access_type": "ref",
+                                        "index": "recipe_id",
+                                        "rows": 2,
+                                        "cost": 1.106208,
+                                        "chosen": true
+                                      },
+                                      {
+                                        "type": "scan",
+                                        "chosen": false,
+                                        "cause": "cost"
+                                      }
+                                    ],
+                                    "chosen_access_method": {
+                                      "type": "ref",
+                                      "rows_read": 2,
+                                      "rows_out": 2,
+                                      "cost": 1.106208,
+                                      "uses_join_buffering": false
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "plan_prefix": "r,rue",
+                              "table": "ep",
+                              "rows_for_plan": 784,
+                              "cost_for_plan": 1.5527484,
+                              "cost_for_sorting": 0.51233688
+                            }
+                          ]
+                        },
+                        {
+                          "plan_prefix": "r",
+                          "table": "ep",
+                          "rows_for_plan": 784,
+                          "cost_for_plan": 1.17035444,
+                          "pruned_by_heuristic": true
+                        }
+                      ]
+                    },
+                    {
+                      "plan_prefix": "",
+                      "table": "rue",
+                      "rows_for_plan": 500,
+                      "cost_for_plan": 0.07998842,
+                      "rest_of_plan": [
+                        {
+                          "plan_prefix": "rue",
+                          "get_costs_for_tables": [
+                            {
+                              "best_access_path": {
+                                "table": "r",
+                                "plan_details": {
+                                  "record_count": 500
+                                },
+                                "considered_access_paths": [
+                                  {
+                                    "access_type": "eq_ref",
+                                    "index": "PRIMARY",
+                                    "rows": 1,
+                                    "cost": 0.4529544,
+                                    "chosen": true
+                                  },
+                                  {
+                                    "access_type": "eq_ref",
+                                    "index": "id",
+                                    "rows": 1,
+                                    "cost": 0.4380217,
+                                    "chosen": true
+                                  },
+                                  {
+                                    "type": "scan",
+                                    "chosen": false,
+                                    "cause": "cost"
+                                  }
+                                ],
+                                "chosen_access_method": {
+                                  "type": "eq_ref",
+                                  "rows_read": 1,
+                                  "rows_out": 1,
+                                  "cost": 0.4380217,
+                                  "uses_join_buffering": false
+                                }
+                              }
+                            },
+                            {
+                              "best_access_path": {
+                                "table": "ep",
+                                "plan_details": {
+                                  "record_count": 500
+                                },
+                                "considered_access_paths": [
+                                  {
+                                    "access_type": "ref",
+                                    "index": "recipe_id",
+                                    "rows": 2,
+                                    "cost": 1.4100768,
+                                    "chosen": true
+                                  },
+                                  {
+                                    "type": "scan",
+                                    "chosen": false,
+                                    "cause": "cost"
+                                  }
+                                ],
+                                "chosen_access_method": {
+                                  "type": "ref",
+                                  "rows_read": 2,
+                                  "rows_out": 2,
+                                  "cost": 1.4100768,
+                                  "uses_join_buffering": false
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "plan_prefix": "rue",
+                          "table": "r",
+                          "rows_for_plan": 500,
+                          "cost_for_plan": 0.51801012,
+                          "rest_of_plan": [
+                            {
+                              "plan_prefix": "rue,r",
+                              "get_costs_for_tables": [
+                                {
+                                  "best_access_path": {
+                                    "table": "ep",
+                                    "plan_details": {
+                                      "record_count": 500
+                                    },
+                                    "considered_access_paths": [
+                                      {
+                                        "access_type": "ref",
+                                        "index": "recipe_id",
+                                        "rows": 2,
+                                        "cost": 1.4100768,
+                                        "chosen": true
+                                      },
+                                      {
+                                        "type": "scan",
+                                        "chosen": false,
+                                        "cause": "cost"
+                                      }
+                                    ],
+                                    "chosen_access_method": {
+                                      "type": "ref",
+                                      "rows_read": 2,
+                                      "rows_out": 2,
+                                      "cost": 1.4100768,
+                                      "uses_join_buffering": false
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "plan_prefix": "rue,r",
+                              "table": "ep",
+                              "rows_for_plan": 1000,
+                              "cost_for_plan": 1.92808692,
+                              "cost_for_sorting": 0.65443936
+                            }
+                          ]
+                        },
+                        {
+                          "plan_prefix": "rue",
+                          "table": "ep",
+                          "rows_for_plan": 1000,
+                          "cost_for_plan": 1.49006522,
+                          "pruned_by_heuristic": true
+                        }
+                      ]
+                    },
+                    {
+                      "plan_prefix": "",
+                      "table": "ep",
+                      "rows_for_plan": 650,
+                      "cost_for_plan": 0.1185144,
+                      "rest_of_plan": [
+                        {
+                          "plan_prefix": "ep",
+                          "get_costs_for_tables": [
+                            {
+                              "best_access_path": {
+                                "table": "rue",
+                                "plan_details": {
+                                  "record_count": 650
+                                },
+                                "considered_access_paths": [
+                                  {
+                                    "access_type": "ref",
+                                    "index": "recipe_id",
+                                    "rows": 1,
+                                    "cost": 0.63353245,
+                                    "chosen": true
+                                  },
+                                  {
+                                    "type": "scan",
+                                    "chosen": false,
+                                    "cause": "cost"
+                                  }
+                                ],
+                                "chosen_access_method": {
+                                  "type": "ref",
+                                  "rows_read": 1,
+                                  "rows_out": 1,
+                                  "cost": 0.63353245,
+                                  "uses_join_buffering": false
+                                }
+                              }
+                            },
+                            {
+                              "best_access_path": {
+                                "table": "r",
+                                "plan_details": {
+                                  "record_count": 650
+                                },
+                                "considered_access_paths": [
+                                  {
+                                    "access_type": "eq_ref",
+                                    "index": "PRIMARY",
+                                    "rows": 1,
+                                    "cost": 0.5871204,
+                                    "chosen": true
+                                  },
+                                  {
+                                    "access_type": "eq_ref",
+                                    "index": "id",
+                                    "rows": 1,
+                                    "cost": 0.56918245,
+                                    "chosen": true
+                                  },
+                                  {
+                                    "type": "scan",
+                                    "chosen": false,
+                                    "cause": "cost"
+                                  }
+                                ],
+                                "chosen_access_method": {
+                                  "type": "eq_ref",
+                                  "rows_read": 1,
+                                  "rows_out": 1,
+                                  "cost": 0.56918245,
+                                  "uses_join_buffering": false
+                                }
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "plan_prefix": "ep",
+                          "table": "r",
+                          "rows_for_plan": 650,
+                          "cost_for_plan": 0.68769685,
+                          "rest_of_plan": [
+                            {
+                              "plan_prefix": "ep,r",
+                              "get_costs_for_tables": [
+                                {
+                                  "best_access_path": {
+                                    "table": "rue",
+                                    "plan_details": {
+                                      "record_count": 650
+                                    },
+                                    "considered_access_paths": [
+                                      {
+                                        "access_type": "ref",
+                                        "index": "recipe_id",
+                                        "rows": 1,
+                                        "cost": 0.63353245,
+                                        "chosen": true
+                                      },
+                                      {
+                                        "type": "scan",
+                                        "chosen": false,
+                                        "cause": "cost"
+                                      }
+                                    ],
+                                    "chosen_access_method": {
+                                      "type": "ref",
+                                      "rows_read": 1,
+                                      "rows_out": 1,
+                                      "cost": 0.63353245,
+                                      "uses_join_buffering": false
+                                    }
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "plan_prefix": "ep,r",
+                              "table": "rue",
+                              "rows_for_plan": 650,
+                              "cost_for_plan": 1.3212293,
+                              "cost_for_sorting": 0.424294378
+                            }
+                          ],
+                          "pruned_by_hanging_leaf": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "check_split_materialized": {
+                    "not_applicable": "no candidate field can be accessed through ref"
+                  }
+                },
+                {
+                  "best_join_order": ["ep", "r", "rue"],
+                  "rows": 650,
+                  "cost": 1.745523678
+                },
+                {
+                  "substitute_best_equal": {
+                    "condition": "WHERE",
+                    "resulting_condition": "r.`id` = ep.recipe_id and rue.recipe_id = ep.recipe_id"
+                  }
+                },
+                {
+                  "attaching_conditions_to_tables": {
+                    "attached_conditions_computation": [],
+                    "attached_conditions_summary": [
+                      {
+                        "table": "ep",
+                        "attached_condition": "ep.recipe_id is not null"
+                      },
+                      {
+                        "table": "r",
+                        "attached_condition": null
+                      },
+                      {
+                        "table": "rue",
+                        "attached_condition": null
+                      }
+                    ]
+                  }
+                },
+                {
+                  "make_join_readinfo": []
+                },
+                {
+                  "test_if_skip_sort_order": []
+                }
+              ]
+            }
+          },
+          {
+            "table_dependencies": [
+              {
+                "table": "<derived2>",
+                "row_may_be_null": false,
+                "map_bit": 0,
+                "depends_on_map_bits": []
+              },
+              {
+                "table": "episodes",
+                "row_may_be_null": false,
+                "map_bit": 1,
+                "depends_on_map_bits": []
+              }
+            ]
+          },
+          {
+            "ref_optimizer_key_uses": [
+              {
+                "table": "<derived2>",
+                "index": "key0",
+                "field": "episode_id",
+                "equals": "episodes.`id`",
+                "null_rejecting": false
+              },
+              {
+                "table": "episodes",
+                "index": "PRIMARY",
+                "field": "id",
+                "equals": "ep_eqc.episode_id",
+                "null_rejecting": false
+              }
+            ]
+          },
+          {
+            "rows_estimation": [
+              {
+                "table": "<derived2>",
+                "table_scan": {
+                  "rows": 650,
+                  "read_cost": 0.01754479,
+                  "read_and_compare_cost": 0.03986189
+                }
+              },
+              {
+                "table": "episodes",
+                "table_scan": {
+                  "rows": 50,
+                  "read_cost": 0.0174048,
+                  "read_and_compare_cost": 0.0190048
+                }
+              }
+            ]
+          },
+          {
+            "considered_execution_plans": [
+              {
+                "plan_prefix": "",
+                "get_costs_for_tables": [
+                  {
+                    "best_access_path": {
+                      "table": "episodes",
+                      "plan_details": {
+                        "record_count": 1
+                      },
+                      "considered_access_paths": [
+                        {
+                          "access_type": "scan",
+                          "rows": 50,
+                          "rows_after_filter": 50,
+                          "rows_out": 50,
+                          "cost": 0.0190048,
+                          "index_only": false,
+                          "chosen": true
+                        }
+                      ],
+                      "chosen_access_method": {
+                        "type": "scan",
+                        "rows_read": 50,
+                        "rows_out": 50,
+                        "cost": 0.0190048,
+                        "uses_join_buffering": false
+                      }
+                    }
+                  },
+                  {
+                    "best_access_path": {
+                      "table": "<derived2>",
+                      "plan_details": {
+                        "record_count": 1
+                      },
+                      "considered_access_paths": [
+                        {
+                          "access_type": "scan",
+                          "rows": 650,
+                          "rows_after_filter": 650,
+                          "rows_out": 650,
+                          "cost": 0.03986189,
+                          "index_only": false,
+                          "chosen": true,
+                          "use_tmp_table": true
+                        }
+                      ],
+                      "chosen_access_method": {
+                        "type": "scan",
+                        "rows_read": 650,
+                        "rows_out": 650,
+                        "cost": 0.03986189,
+                        "uses_join_buffering": false
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "plan_prefix": "",
+                "table": "episodes",
+                "rows_for_plan": 50,
+                "cost_for_plan": 0.0190048,
+                "rest_of_plan": [
+                  {
+                    "plan_prefix": "episodes",
+                    "get_costs_for_tables": [
+                      {
+                        "best_access_path": {
+                          "table": "<derived2>",
+                          "plan_details": {
+                            "record_count": 50
+                          },
+                          "considered_access_paths": [
+                            {
+                              "access_type": "ref",
+                              "index": "key0",
+                              "rec_per_key_stats_missing": true,
+                              "used_range_estimates": false,
+                              "reason": "not available",
+                              "rows": 10,
+                              "cost": 0.0639105,
+                              "chosen": true
+                            },
+                            {
+                              "access_type": "scan_with_join_cache",
+                              "rows": 650,
+                              "rows_after_filter": 650,
+                              "rows_out": 10,
+                              "cost": 3.06105019,
+                              "cost_without_join_buffer": 1.9930945,
+                              "index_only": false,
+                              "chosen": false
+                            }
+                          ],
+                          "chosen_access_method": {
+                            "type": "ref",
+                            "rows_read": 10,
+                            "rows_out": 10,
+                            "cost": 0.0639105,
+                            "uses_join_buffering": false
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "plan_prefix": "episodes",
+                    "table": "<derived2>",
+                    "rows_for_plan": 500,
+                    "cost_for_plan": 0.0829153,
+                    "cost_for_sorting": 0.325869328
+                  }
+                ]
+              },
+              {
+                "plan_prefix": "",
+                "table": "<derived2>",
+                "rows_for_plan": 650,
+                "cost_for_plan": 0.03986189,
+                "rest_of_plan": [
+                  {
+                    "plan_prefix": "<derived2>",
+                    "get_costs_for_tables": [
+                      {
+                        "best_access_path": {
+                          "table": "episodes",
+                          "plan_details": {
+                            "record_count": 650
+                          },
+                          "considered_access_paths": [
+                            {
+                              "access_type": "eq_ref",
+                              "index": "PRIMARY",
+                              "rows": 1,
+                              "cost": 0.5822052,
+                              "chosen": true
+                            },
+                            {
+                              "access_type": "scan_with_join_cache",
+                              "rows": 50,
+                              "rows_after_filter": 50,
+                              "rows_out": 1,
+                              "cost": 3.0767127,
+                              "cost_without_join_buffer": 11.8214592,
+                              "index_only": false,
+                              "chosen": false
+                            }
+                          ],
+                          "chosen_access_method": {
+                            "type": "eq_ref",
+                            "rows_read": 1,
+                            "rows_out": 1,
+                            "cost": 0.5822052,
+                            "uses_join_buffering": false
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "plan_prefix": "<derived2>",
+                    "table": "episodes",
+                    "rows_for_plan": 650,
+                    "cost_for_plan": 0.62206709,
+                    "pruned_by_cost": true,
+                    "current_cost": 0.62206709,
+                    "best_cost": 0.408784628
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "best_join_order": ["episodes", "<derived2>"],
+            "rows": 500,
+            "cost": 0.408784628
+          },
+          {
+            "substitute_best_equal": {
+              "condition": "WHERE",
+              "resulting_condition": "ep_eqc.episode_id = episodes.`id`"
+            }
+          },
+          {
+            "attaching_conditions_to_tables": {
+              "attached_conditions_computation": [],
+              "attached_conditions_summary": [
+                {
+                  "table": "episodes",
+                  "attached_condition": null
+                },
+                {
+                  "table": "<derived2>",
+                  "attached_condition": null
+                }
+              ]
+            }
+          },
+          {
+            "make_join_readinfo": []
+          }
+        ]
+      }
+    },
+    {
+      "join_execution": {
+        "select_id": 1,
+        "steps": [
+          {
+            "join_execution": {
+              "select_id": 2,
+              "steps": []
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
