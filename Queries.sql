@@ -1,5 +1,3 @@
--- Active: 1716285326561@@127.0.0.1@3306@real_dbp
-
 -- 3.1 --------------------------------------------------------------------------------------------------------------
 CREATE VIEW chef_average_score AS
 SELECT CONCAT(c.first_name," ",c.last_name) as full_name, AVG(jrc.score) as mean_score
@@ -435,3 +433,84 @@ SELECT
     participation_count
 FROM
     ConsecutiveYearParticipations;
+
+
+/* Tracing 3.6.1 */
+SET optimizer_trace='enabled=on';
+
+EXPLAIN SELECT rhlp.l1_name, rhlp.l2_name, COUNT(rhlp.recipe_id) as pair_popularity
+FROM recipe_has_label_pair rhlp 
+INNER JOIN episode_participants ep ON rhlp.recipe_id = ep.recipe_id
+GROUP BY l1_id, l2_id
+ORDER BY pair_popularity DESC
+LIMIT 3;
+
+SELECT * FROM information_schema.optimizer_trace
+
+SET optimizer_trace='enabled=off';
+/* Tracing 3.6.2 */
+SET optimizer_trace='enabled=on';
+
+CREATE INDEX idx_recipe_label ON recipe_has_label (recipe_id, label_id);
+CREATE INDEX idx_episode_recipe ON episode_participants (recipe_id);
+CREATE VIEW label_pairs AS
+SELECT DISTINCT
+    LEAST(l1.id, l2.id) AS l1_id,
+    GREATEST(l1.id, l2.id) AS l2_id,
+    IF(LEAST(l1.id, l2.id) = l1.id, l1.name, l2.name) AS l1_name,
+    IF(LEAST(l1.id, l2.id) = l1.id, l2.name, l1.name) AS l2_name
+FROM labels AS l1
+CROSS JOIN labels AS l2
+WHERE l1.id <> l2.id;
+
+CREATE VIEW recipe_has_label_pair AS
+SELECT rhl1.recipe_id, lp.*
+FROM label_pairs AS lp
+INNER JOIN recipe_has_label AS rhl1 FORCE INDEX (idx_recipe_label) ON lp.l1_id = rhl1.label_id
+INNER JOIN recipe_has_label AS rhl2 FORCE INDEX (idx_recipe_label) ON lp.l2_id = rhl2.label_id
+WHERE rhl1.recipe_id = rhl2.recipe_id;
+EXPLAIN SELECT rhlp.l1_name, rhlp.l2_name, COUNT(rhlp.recipe_id) AS pair_popularity
+FROM recipe_has_label_pair AS rhlp
+INNER JOIN episode_participants AS ep FORCE INDEX (idx_episode_recipe) ON rhlp.recipe_id = ep.recipe_id
+GROUP BY l1_id, l2_id
+ORDER BY pair_popularity DESC
+LIMIT 3;
+
+SELECT * FROM information_schema.optimizer_trace
+
+SET optimizer_trace='enabled=off';
+
+/* Tracing 3.8.1 */
+SET optimizer_trace='enabled=on';
+
+EXPLAIN SELECT episodes.*, COUNT(*) as equipment_count
+FROM recipes = r
+    INNER JOIN episode_participants = ep ON r.id = ep.recipe_id
+    INNER JOIN recipe_uses_equipment = rue ON r.id = rue.recipe_id
+    INNER JOIN episodes ON episodes.id = ep.episode_id
+GROUP BY ep.episode_id
+ORDER BY equipment_count DESC
+
+SELECT * FROM information_schema.optimizer_trace
+
+SET optimizer_trace='enabled=off';
+
+/* Tracing 3.8.2 */
+SET optimizer_trace='enabled=on';
+
+EXPLAIN SELECT episodes.*, ep_eqc.equipment_count
+FROM (
+    SELECT ep.episode_id, COUNT(*) as equipment_count
+    FROM recipes r
+        INNER JOIN episode_participants ep FORCE INDEX (recipe_id) ON r.id = ep.recipe_id
+        INNER JOIN recipe_uses_equipment rue FORCE INDEX(recipe_id) ON r.id = rue.recipe_id
+    GROUP BY ep.episode_id
+) AS ep_eqc
+INNER JOIN episodes ON episodes.id = ep_eqc.episode_id
+ORDER BY ep_eqc.equipment_count DESC;
+
+SELECT * FROM information_schema.optimizer_trace
+
+SET optimizer_trace='enabled=off';
+
+/* END */
