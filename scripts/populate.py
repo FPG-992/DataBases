@@ -143,14 +143,11 @@ def main():
     num_cuisines = 10
     num_judges = 3
 
-    # Cook participation count
-    cook_part_c = dict()
-
     # Insert episodes
     insert_episodes(connection, year, num_episodes)
 
     # Fetch episode IDs
-    episodes = fetch_query(connection, "SELECT id FROM episodes")
+    episodes = fetch_query(connection, f"SELECT id FROM episodes WHERE year = {year};")
 
     for episode in episodes:
         episode_id = episode["id"]
@@ -163,14 +160,13 @@ def main():
             # Select one cook from each national cuisine
 
             cooks = select_random_chefs_by_cuisine(connection, cuisine, 1)
-            while cook_part_c.get(cooks[0], 0) > 3:
-                cooks = select_random_chefs_by_cuisine(connection, cuisine, 1)
             if cooks:
                 participant_cooks.extend(cooks)
-                cook_part_c[cooks[0]] = cook_part_c.get(cooks[0], 0) + 1
 
         # Select 3 judge cooks
         judge_cooks = select_random_judge_chefs(connection, num_judges)
+        while any(judge in participant_cooks for judge in judge_cooks):
+            judge_cooks = select_random_judge_chefs(connection, num_judges)
 
         # Insert participants into episode_participants table
         insert_episode_participants(
