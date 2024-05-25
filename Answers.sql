@@ -314,4 +314,126 @@ JOIN
     AND yp2.year = yp1.year + 1
     AND yp1.participation_count = yp2.participation_count;
 
+===FILIPPOS=====
+/* Query 3.15: Find the food groups that are not used in any recipe in any episode. */
+SELECT fg.name
+FROM food_groups fg
+WHERE fg.id NOT IN (
+    SELECT DISTINCT i.food_group
+    FROM ingredients i
+    INNER JOIN recipe_uses_ingredient rui ON i.id = rui.ingredient_id
+    INNER JOIN episode_participants ep ON rui.recipe_id = ep.recipe_id
+);
 
+/* Query 3.14 find the theme that participated the most times in the contest */
+SELECT t.name AS theme_name, COUNT(ep.recipe_id) AS contest_count
+FROM themes t
+JOIN recipe_theme_link rtl ON t.id = rtl.theme_id
+JOIN episode_participants ep ON rtl.recipe_id = ep.recipe_id
+GROUP BY t.name
+ORDER BY contest_count DESC
+LIMIT 1;
+
+/* Query 3.13 find the episode that had the minimum total sum of the experience 
+of the ten chefs that participated and the 3 judges that were in the episode */
+SELECT ep.episode_id, SUM(c.experience) AS total_experience
+FROM episode_participants ep
+JOIN chefs c ON ep.chef_id = c.id
+WHERE ep.role IN ('participant', 'judge')
+GROUP BY ep.episode_id
+ORDER BY total_experience ASC
+LIMIT 1;
+
+/*Query 3.12 */ 
+WITH EpisodeDifficulties AS (
+    SELECT
+        e.year,
+        ep.episode_id,
+        AVG(r.difficulty) AS avg_difficulty
+    FROM
+        episodes e
+    JOIN
+        episode_participants ep ON e.id = ep.episode_id
+    JOIN
+        recipes r ON ep.recipe_id = r.id
+    GROUP BY
+        e.year, ep.episode_id
+),
+MaxDifficulties AS (
+    SELECT
+        year,
+        MAX(avg_difficulty) AS max_difficulty
+    FROM
+        EpisodeDifficulties
+    GROUP BY
+        year
+)
+SELECT
+    ed.year,
+    ed.episode_id,
+    ed.avg_difficulty
+FROM
+    EpisodeDifficulties ed
+JOIN
+    MaxDifficulties md ON ed.year = md.year AND ed.avg_difficulty = md.max_difficulty
+ORDER BY
+    ed.year;
+
+/* Query 3.11 Find the top 5 judges that have given totally the highest score in a certain chef */
+SELECT 
+    j.first_name AS judge_first_name, 
+    j.last_name AS judge_last_name, 
+    c.first_name AS chef_first_name, 
+    c.last_name AS chef_last_name, 
+    SUM(jrc.score) AS total_score
+FROM 
+    judge_rates_chef jrc
+JOIN 
+    chefs j ON jrc.judge_id = j.id
+JOIN 
+    chefs c ON jrc.chef_id = c.id
+GROUP BY 
+    jrc.judge_id, jrc.chef_id
+ORDER BY 
+    total_score DESC
+LIMIT 5;
+
+/* Query 3.10: What national cuisines have the same ammount of participations in contests, in a period of two consecutive years , with at least 3 yearly participations */
+WITH YearlyParticipations AS (
+    SELECT
+        nc.name AS national_cuisine,
+        e.year,
+        COUNT(ep.recipe_id) AS participation_count
+    FROM
+        national_cuisines nc
+    JOIN
+        recipes r ON nc.name = r.national_cuisine
+    JOIN
+        episode_participants ep ON r.id = ep.recipe_id
+    JOIN
+        episodes e ON ep.episode_id = e.id
+    GROUP BY
+        nc.name, e.year
+    HAVING
+        COUNT(ep.recipe_id) >= 3
+),
+ConsecutiveYearParticipations AS (
+    SELECT
+        yp1.national_cuisine,
+        yp1.year AS year1,
+        yp2.year AS year2,
+        yp1.participation_count
+    FROM
+        YearlyParticipations yp1
+    JOIN
+        YearlyParticipations yp2 ON yp1.national_cuisine = yp2.national_cuisine
+        AND yp2.year = yp1.year + 1
+        AND yp1.participation_count = yp2.participation_count
+)
+SELECT
+    national_cuisine,
+    year1 AS year,
+    year2 AS next_year,
+    participation_count
+FROM
+    ConsecutiveYearParticipations;
