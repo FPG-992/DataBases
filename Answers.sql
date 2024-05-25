@@ -314,7 +314,7 @@ JOIN
     AND yp2.year = yp1.year + 1
     AND yp1.participation_count = yp2.participation_count;
 
-===FILIPPOS=====
+ /*===FILIPPOS=====*/
 /* Query 3.15: Find the food groups that are not used in any recipe in any episode. */
 SELECT fg.name
 FROM food_groups fg
