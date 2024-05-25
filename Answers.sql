@@ -244,7 +244,7 @@ ORDER BY
     total_score DESC
 LIMIT 5;
 
-/* Query 3.10: What national cuisines have the same ammount of participations in contests, in a period of two consecutive years , with at least 3 yearly participations */
+
 WITH YearlyParticipations AS (
     SELECT
         nc.name AS national_cuisine,
@@ -314,8 +314,7 @@ JOIN
     AND yp2.year = yp1.year + 1
     AND yp1.participation_count = yp2.participation_count;
 
- /*===FILIPPOS=====*/
-/* Query 3.15: Find the food groups that are not used in any recipe in any episode. */
+
 SELECT fg.name
 FROM food_groups fg
 WHERE fg.id NOT IN (
@@ -325,7 +324,7 @@ WHERE fg.id NOT IN (
     INNER JOIN episode_participants ep ON rui.recipe_id = ep.recipe_id
 );
 
-/* Query 3.14 find the theme that participated the most times in the contest */
+
 SELECT t.name AS theme_name, COUNT(ep.recipe_id) AS contest_count
 FROM themes t
 JOIN recipe_theme_link rtl ON t.id = rtl.theme_id
@@ -334,8 +333,7 @@ GROUP BY t.name
 ORDER BY contest_count DESC
 LIMIT 1;
 
-/* Query 3.13 find the episode that had the minimum total sum of the experience 
-of the ten chefs that participated and the 3 judges that were in the episode */
+
 SELECT ep.episode_id, SUM(c.experience) AS total_experience
 FROM episode_participants ep
 JOIN chefs c ON ep.chef_id = c.id
@@ -344,7 +342,7 @@ GROUP BY ep.episode_id
 ORDER BY total_experience ASC
 LIMIT 1;
 
-/*Query 3.12 */ 
+
 WITH EpisodeDifficulties AS (
     SELECT
         e.year,
@@ -379,7 +377,7 @@ JOIN
 ORDER BY
     ed.year;
 
-/* Query 3.11 Find the top 5 judges that have given totally the highest score in a certain chef */
+
 SELECT 
     j.first_name AS judge_first_name, 
     j.last_name AS judge_last_name, 
