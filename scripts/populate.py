@@ -136,7 +136,7 @@ def insert_judge_scores(connection, episode_id):
 
 
 def main():
-    connection = create_connection("127.0.0.1", "root", "root", "real_dbp")
+    connection = create_connection("127.0.0.1", "root", "root", "final_dbp")
 
     year = 2025
     num_episodes = 10
