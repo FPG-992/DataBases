@@ -70,7 +70,7 @@ if __name__ == '__main__':
         cursor: MySQLCursor = connection.cursor(dictionary=True)
 
         if cursor is not None:
-            app.run(debug=True)
+            app.run(debug=False)
 
             cursor.close()
 
