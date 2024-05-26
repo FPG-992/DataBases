@@ -1,0 +1,6 @@
+beautifulsoup4==4.12.3
+pandas==2.2.1
+mysql-connector-python==8.4.0
+flask==3.0.3
+requests==2.31.0
+deep_translator==1.11.4
