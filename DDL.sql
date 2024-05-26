@@ -71,7 +71,9 @@ CREATE TABLE `chef_specializes_in_national_cuisine` (
   `chef_id` int(11) NOT NULL,
   `national_cuisine` varchar(255) NOT NULL,
   PRIMARY KEY (`chef_id`,`national_cuisine`),
-  KEY `national_cuisine` (`national_cuisine`)
+  KEY `national_cuisine` (`national_cuisine`),
+  CONSTRAINT `chef_specializes_in_national_cuisine_ibfk_1` FOREIGN KEY (`chef_id`) REFERENCES `chefs` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `chef_specializes_in_national_cuisine_ibfk_2` FOREIGN KEY (`national_cuisine`) REFERENCES `national_cuisines` (`name`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -113,7 +115,10 @@ CREATE TABLE `episode_participants` (
   KEY `chef_id` (`chef_id`),
   KEY `episode_id` (`episode_id`),
   KEY `recipe_id` (`recipe_id`),
-  KEY `idx_episode_recipe` (`recipe_id`)
+  KEY `idx_episode_recipe` (`recipe_id`),
+  CONSTRAINT `episode_participants_ibfk_1` FOREIGN KEY (`episode_id`) REFERENCES `episodes` (`id`),
+  CONSTRAINT `episode_participants_ibfk_2` FOREIGN KEY (`chef_id`) REFERENCES `chefs` (`id`),
+  CONSTRAINT `episode_participants_ibfk_3` FOREIGN KEY (`recipe_id`) REFERENCES `recipes` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=651 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -224,8 +229,9 @@ CREATE TABLE `ingredients` (
   UNIQUE KEY `id` (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `name_index` (`name`),
-  KEY `food_group` (`food_group`)
-) ENGINE=InnoDB AUTO_INCREMENT=304 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `food_group` (`food_group`),
+  CONSTRAINT `ingredients_ibfk_1` FOREIGN KEY (`food_group`) REFERENCES `food_groups` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=1796 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -244,7 +250,10 @@ CREATE TABLE `judge_rates_chef` (
   PRIMARY KEY (`id`),
   KEY `chef` (`chef_id`),
   KEY `judge` (`judge_id`),
-  KEY `episode_id` (`episode_id`)
+  KEY `episode_id` (`episode_id`),
+  CONSTRAINT `judge_rates_chef_ibfk_1` FOREIGN KEY (`chef_id`) REFERENCES `chefs` (`id`),
+  CONSTRAINT `judge_rates_chef_ibfk_2` FOREIGN KEY (`judge_id`) REFERENCES `chefs` (`id`),
+  CONSTRAINT `judge_rates_chef_ibfk_3` FOREIGN KEY (`episode_id`) REFERENCES `episodes` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1501 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -334,7 +343,9 @@ CREATE TABLE `recipe_has_label` (
   `label_id` int(11) NOT NULL,
   PRIMARY KEY (`recipe_id`,`label_id`),
   KEY `recipe_has_label_ibfk_2` (`label_id`),
-  KEY `idx_recipe_label` (`recipe_id`,`label_id`)
+  KEY `idx_recipe_label` (`recipe_id`,`label_id`),
+  CONSTRAINT `recipe_has_label_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `recipes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `recipe_has_label_ibfk_2` FOREIGN KEY (`label_id`) REFERENCES `labels` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -365,7 +376,9 @@ CREATE TABLE `recipe_theme_link` (
   `recipe_id` int(11) NOT NULL,
   `theme_id` int(11) NOT NULL,
   PRIMARY KEY (`recipe_id`,`theme_id`),
-  KEY `theme_id` (`theme_id`)
+  KEY `theme_id` (`theme_id`),
+  CONSTRAINT `recipe_theme_link_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `recipes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `recipe_theme_link_ibfk_2` FOREIGN KEY (`theme_id`) REFERENCES `themes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -381,7 +394,9 @@ CREATE TABLE `recipe_uses_equipment` (
   `equipment_id` int(11) NOT NULL,
   PRIMARY KEY (`recipe_id`,`equipment_id`),
   KEY `equipment_id` (`equipment_id`),
-  KEY `recipe_id` (`recipe_id`)
+  KEY `recipe_id` (`recipe_id`),
+  CONSTRAINT `recipe_uses_equipment_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `recipes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `recipe_uses_equipment_ibfk_2` FOREIGN KEY (`equipment_id`) REFERENCES `equipment` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -397,7 +412,9 @@ CREATE TABLE `recipe_uses_ingredient` (
   `ingredient_id` int(11) NOT NULL,
   `quantity` float NOT NULL,
   PRIMARY KEY (`recipe_id`,`ingredient_id`),
-  KEY `ingredient_id` (`ingredient_id`)
+  KEY `ingredient_id` (`ingredient_id`),
+  CONSTRAINT `recipe_uses_ingredient_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `recipes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `recipe_uses_ingredient_ibfk_2` FOREIGN KEY (`ingredient_id`) REFERENCES `ingredients` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -423,8 +440,11 @@ CREATE TABLE `recipes` (
   UNIQUE KEY `id` (`id`),
   KEY `national_cuisine` (`national_cuisine`),
   KEY `meal_type` (`meal_type`),
-  KEY `main_ingredient_id` (`main_ingredient_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=399 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  KEY `main_ingredient_id` (`main_ingredient_id`),
+  CONSTRAINT `recipes_ibfk_1` FOREIGN KEY (`national_cuisine`) REFERENCES `national_cuisines` (`name`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `recipes_ibfk_2` FOREIGN KEY (`meal_type`) REFERENCES `meal_types` (`name`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `recipes_ibfk_3` FOREIGN KEY (`main_ingredient_id`) REFERENCES `ingredients` (`id`) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=477 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -441,7 +461,8 @@ CREATE TABLE `steps` (
   `description` text NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
-  KEY `recipe_id` (`recipe_id`)
+  KEY `recipe_id` (`recipe_id`),
+  CONSTRAINT `steps_ibfk_1` FOREIGN KEY (`recipe_id`) REFERENCES `recipes` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB AUTO_INCREMENT=2001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -465,6 +486,43 @@ CREATE TABLE `themes` (
 --
 -- Dumping routines for database 'final_dbp'
 --
+/*!50003 DROP PROCEDURE IF EXISTS `check_consecutive_participation` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `check_consecutive_participation`(IN chef INT, IN new_episode_id INT)
+BEGIN
+    DECLARE participation_count INT;
+    -- Fetch the previous three episodes based on the new episode ID
+    SET participation_count = (
+        SELECT COUNT(*)
+        FROM (
+            SELECT ep.episode_id
+            FROM episode_participants ep
+            JOIN episodes e ON ep.episode_id = e.id
+            WHERE ep.chef_id = chef
+            AND ep.episode_id < new_episode_id
+            ORDER BY ep.episode_id DESC
+            LIMIT 3
+        ) AS last_three_episodes
+    );
+    -- Check if the chef participated in the last three episodes
+    IF participation_count = 3 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'A chef cannot participate in more than 3 consecutive episodes';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Final view structure for view `chef_average_score`
@@ -565,4 +623,4 @@ CREATE TABLE `themes` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-05-26 21:02:32
+-- Dump completed on 2024-05-26 21:52:44
