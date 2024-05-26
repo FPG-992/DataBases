@@ -330,7 +330,7 @@ def main():
         ''' chef '''
         chefs(connection, 'Petros', 'Floratos')
     else:
-        ''' invalid '''
+        print('> Invalid username or password')
 
 
 if __name__ == '__main__':
