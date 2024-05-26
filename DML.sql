@@ -83,6 +83,7 @@ CREATE TABLE `chefs` (
   `phone_number` varchar(255) NOT NULL,
   `type` int(11) NOT NULL,
   `experience` int(11) DEFAULT NULL,
+  `passwd` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
