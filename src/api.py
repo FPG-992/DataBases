@@ -12,7 +12,7 @@ app = Flask(__name__)
 def post_request_query(number):
     global connection, cursor
 
-    results = run_sql_file(f'Queries/for_api/{number}.sql', connection, cursor)
+    results = run_sql_file(f'queries/for_api/{number}.sql', connection, cursor)
 
     code = 400
     if results is not None:
